@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"sync"
 
@@ -75,34 +76,41 @@ func loadImage(uri string) (string, error) {
 	return buf.String(), nil
 }
 
-func (b *betaseriesBot) tweetNews(v *bs.News) {
+func (b *betaseriesBot) tweetNews(item *bs.News) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
-	if _, ok := b.News[v.ID]; !ok {
-		img, err := loadImage(v.PictureURL)
+	if _, ok := b.News[item.ID]; !ok {
+		img, err := loadImage(item.PictureURL)
 		if err != nil {
 			log.Println(err.Error())
 			return
 		}
-		err = b.twbot.TweetImageOnce(v.Title, v.URL, img)
+		err = b.twbot.TweetImageOnce(item.Title, item.URL, img)
 		if err != nil {
 			log.Println(err.Error())
 			return
 		}
-		b.News[v.ID] = *v
+		log.Printf("tweeting news (ID: %s): %s\n", item.ID, item.Title)
+		b.News[item.ID] = *item
 		b.save()
 		freeze.SleepMinMax(10, 20)
 	}
 }
 
-func (b *betaseriesBot) TweetNews() error {
-	news, err := b.bsClient.NewsLast(20, false)
-	if err != nil {
-		return err
-	}
-	// TODO read the news backward or chronologically
-	for _, v := range news {
-		b.tweetNews(&v)
-	}
-	return nil
+func (b *betaseriesBot) TweetNewsAsync(freq time.Duration) {
+	go func() {
+		ticker := time.NewTicker(freq)
+		defer ticker.Stop()
+		for _ = range ticker.C {
+			news, err := b.bsClient.NewsLast(20, false)
+			if err != nil {
+				log.Println(err.Error())
+				continue
+			}
+			// TODO read the news backward or chronologically
+			for _, v := range news {
+				b.tweetNews(&v)
+			}
+		}
+	}()
 }
