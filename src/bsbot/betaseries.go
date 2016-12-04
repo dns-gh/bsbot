@@ -17,6 +17,10 @@ import (
 	"github.com/dns-gh/twbot"
 )
 
+const (
+	baseURL = "https://www.betaseries.com"
+)
+
 type betaseriesBot struct {
 	bsClient *bs.BetaSeries
 	twbot    *twbot.TwitterBot
@@ -110,6 +114,43 @@ func (b *betaseriesBot) TweetNewsAsync(freq time.Duration) {
 			// TODO read the news backward or chronologically
 			for _, v := range news {
 				b.tweetNews(&v)
+			}
+		}
+	}()
+}
+
+func (b *betaseriesBot) getRandomBanner() (string, error) {
+	maxTries := 5
+	shows, err := b.bsClient.ShowsRandom(maxTries, false)
+	if err != nil {
+		return "", err
+	}
+	for _, v := range shows {
+		if len(v.Images.Banner) == 0 {
+			continue
+		}
+		img, err := loadImage(baseURL + v.Images.Banner)
+		if err != nil {
+			continue
+		}
+		return img, nil
+	}
+	return "", fmt.Errorf("could no get banner after %d tries", maxTries)
+}
+
+func (b *betaseriesBot) UpdateProfileBannerAsync(freq time.Duration) {
+	go func() {
+		ticker := time.NewTicker(freq)
+		defer ticker.Stop()
+		for _ = range ticker.C {
+			img, err := b.getRandomBanner()
+			if err != nil {
+				log.Println(err.Error())
+				continue
+			}
+			err = b.twbot.UpdateProfileBanner(img, -1, -1, -1, -1)
+			if err != nil {
+				log.Println(err.Error())
 			}
 		}
 	}()
