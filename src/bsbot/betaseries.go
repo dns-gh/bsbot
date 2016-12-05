@@ -126,14 +126,15 @@ func (b *betaseriesBot) getRandomBanner() (string, error) {
 		return "", err
 	}
 	for _, v := range shows {
-		if len(v.Images.Banner) == 0 {
-			continue
+		// show image quality is better than the banner image one
+		if len(v.Images.Show) != 0 {
+			img, err := loadImage(baseURL + v.Images.Show)
+			if err != nil {
+				continue
+			}
+			return img, nil
 		}
-		img, err := loadImage(baseURL + v.Images.Banner)
-		if err != nil {
-			continue
-		}
-		return img, nil
+		continue
 	}
 	return "", fmt.Errorf("could no get banner after %d tries", maxTries)
 }

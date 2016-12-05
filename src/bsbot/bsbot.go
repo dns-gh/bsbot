@@ -64,8 +64,8 @@ func main() {
 		*debug)
 	defer bot.Close()
 	bsBot := makeBetaseriesBot(*bsKey, *bsPath, bot)
-	bsBot.TweetNewsAsync(30 * time.Minute)
-	bsBot.UpdateProfileBannerAsync(30 * time.Second)
+	bsBot.TweetNewsAsync(15 * time.Minute)
+	bsBot.UpdateProfileBannerAsync(30 * time.Minute)
 	bot.TweetPeriodicallyAsync(func() (string, error) {
 		return fmt.Sprintf("Hey, I'm a bot tweeting about #tvshows and #movie updates, check out my #source #code %s and help me #improve !", projectURL), nil
 	}, *update)
