@@ -2,7 +2,9 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/dns-gh/bsbot)](https://goreportcard.com/report/github.com/dns-gh/bsbot)
 
-bstbot is a Twitter bot tweeting about new TV Shows and movie broadcasts
+bstbot is a Twitter bot tweeting about new TV Shows and movie broadcasts.
+
+See https://twitter.com/BetaseriesBot for one instance of it.
 
 It uses the following betaseries API: https://www.betaseries.com/api/
 
