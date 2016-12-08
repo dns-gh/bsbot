@@ -83,7 +83,7 @@ func loadImage(uri string) (string, error) {
 func (b *betaseriesBot) tweetNews(item *bs.News) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
-	if _, ok := b.News[item.ID]; !ok {
+	if _, ok := b.News[item.ID]; !ok && len(item.PictureURL) != 0 {
 		img, err := loadImage(item.PictureURL)
 		if err != nil {
 			log.Println(err.Error())
